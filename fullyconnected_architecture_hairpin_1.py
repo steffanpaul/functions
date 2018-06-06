@@ -4,13 +4,21 @@ def cnn_model(input_shape, output_shape):
     layer1 = {'layer': 'input', #41
             'input_shape': input_shape
             }
-
-    layer2 = {'layer': 'dense',
+    
+    layer2 = {'layer': 'dense',        # input, conv1d, dense, conv1d_residual, dense_residual, conv1d_transpose,
+                                        # concat, embedding, variational_normal, variational_softmax, + more
+              'num_units': 196,
+              'norm': 'batch',          # if removed, automatically adds bias instead
+              'activation': 'relu',     # or leaky_relu, prelu, sigmoid, tanh, etc
+              'dropout': 0.5,           # if removed, default is no dropout
+             }
+    
+    layer3 = {'layer': 'dense',
             'num_units': output_shape[1],
             'activation': 'sigmoid'
             }
 
-    model_layers = [layer1, layer2]
+    model_layers = [layer1, layer2, layer3]
 
     # optimization parameters
     optimization = {"objective": "binary",
