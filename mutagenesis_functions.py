@@ -191,8 +191,56 @@ def som_average(X, savepath, nntrainer, sess, progress='on', save=True):
 
 
 
+def som_neuronaverage(X, layer, neuron, savepath, nntrainer, sess, progress='on', save=True):
 
-def square_holplot(mutations, num, alphabet, limits=(0., 1.0), cmap ='Blues', figsize=(15,14), lines=True, start=(4,22)):
+    num_summary, seqlen, _, dims = X.shape
+
+    sum_mut2_scores = np.zeros((seqlen*seqlen*dims*dims,))
+    starttime = time.time()
+
+    for ii in range(num_summary):
+        if progress == 'on':
+            print (ii)
+        
+        epoch_starttime = time.time()
+
+        #mutate the sequence
+        X_mutsecorder = double_mutate(np.expand_dims(X[ii], axis=0), seqlen, dims)
+
+        #reshape the 6D tensor into a 4D tensor that the model can test
+        X_mutsecorder_reshape = np.reshape(X_mutsecorder, (seqlen*seqlen*dims*dims, seqlen, 1, dims))
+        mutations = {'inputs': X_mutsecorder_reshape, 'targets': np.ones((X_mutsecorder_reshape.shape[0], 1))}
+
+        #Get output activations for the mutations
+        mut2_scores= nntrainer.get_activations(sess, mutations, layer=layer)[:,neuron]
+
+        #Sum all the scores into a single matrix
+        sum_mut2_scores += mut2_scores
+
+        epoch_endtime = time.time()
+        
+        if progress == 'on':
+
+            print ('Epoch duration =' + sectotime(epoch_endtime -epoch_starttime))
+            print ('Cumulative duration =' + sectotime(epoch_endtime - starttime))
+            print ()
+            
+    if progress == 'off':
+        print ('----------------Summing complete----------------')
+        
+    # Save the summed array for future use
+    if save == True:
+        np.save(savepath, sum_mut2_scores)
+        print ('Saving scores to ' + savepath)
+
+    return (sum_mut2_scores)
+
+
+
+
+
+
+def square_holplot(mutations, num, alphabet, limits=(0., 1.0), title=False, cmap ='Blues', figsize=(15,14), lines=True, start=(4,22)):
 
     if alphabet == 'rna':
         nuc = ['A', 'C', 'G', 'U']
@@ -231,6 +279,14 @@ def square_holplot(mutations, num, alphabet, limits=(0., 1.0), cmap ='Blues', fi
                 else:
                     xtick=[]
                     ytick=[]
+                    
+            #plot titles
+            if title == True:
+                if one == 0:               
+                    ax.set_title(str(one+start_1))
+                if two == 0:
+                    ax.set_ylabel(str(two+start_2))
+                    
 
             ax = sb.heatmap(mutations[one+start_1, two+start_2], vmin=vmin, vmax=vmax, cmap=cmap, linewidths=linewidths, linecolor='black', xticklabels=xtick, yticklabels=ytick, cbar=False)
             
