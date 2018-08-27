@@ -240,7 +240,8 @@ def som_neuronaverage(X, layer, neuron, savepath, nntrainer, sess, progress='on'
 
 
 
-def square_holplot(mutations, num, alphabet, limits=(0., 1.0), title=False, cmap ='Blues', figsize=(15,14), lines=True, start=(4,22)):
+def square_holplot(mutations, num, alphabet, limits=(0., 1.0), title=False, cmap ='Blues',
+                   figsize=(15,14), lines=True, start=(4,22), reverse=False, cbar=False):
 
     if alphabet == 'rna':
         nuc = ['A', 'C', 'G', 'U']
@@ -259,7 +260,7 @@ def square_holplot(mutations, num, alphabet, limits=(0., 1.0), title=False, cmap
 
     start_1, start_2 = start
 
-    fig = plt.figure(figsize=(15,14))
+    fig = plt.figure(figsize=figsize)
     for one in range(num):
         for two in range(num):
             ax = fig.add_subplot(num, num, ((one*num)+two)+1)
@@ -280,16 +281,22 @@ def square_holplot(mutations, num, alphabet, limits=(0., 1.0), title=False, cmap
                     xtick=[]
                     ytick=[]
                     
+            if reverse == True:
+                yy = one + start_1
+                xx = start_2 - two
+            if reverse == False:
+                yy = one + start_1
+                xx = two + start_2
+
+            ax = sb.heatmap(mutations[yy, xx], vmin=vmin, vmax=vmax, cmap=cmap,
+                            linewidths=linewidths, linecolor='black', xticklabels=xtick, yticklabels=ytick,
+                            cbar=cbar)
             #plot titles
             if title == True:
                 if one == 0:               
-                    ax.set_title(str(one+start_1))
+                    ax.set_title(str(xx))
                 if two == 0:
-                    ax.set_ylabel(str(two+start_2))
-                    
-
-            ax = sb.heatmap(mutations[one+start_1, two+start_2], vmin=vmin, vmax=vmax, cmap=cmap, linewidths=linewidths, linecolor='black', xticklabels=xtick, yticklabels=ytick, cbar=False)
-            
+                    ax.set_ylabel(str(yy))
             
             
 def symlinear_holplot(mutations, figplot, alphabet, start=0, limits=(0., 1.), cmap ='Blues', figsize=(10,7), lines=True):
